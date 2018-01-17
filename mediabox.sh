@@ -84,9 +84,9 @@ mkdir -p sickrage
 mkdir -p sonarr
 mkdir -p www
 # Move the PIA VPN files
-mv ca.ovpn delugevpn/config/openvpn/ca.ovpn > /dev/null 2>&1
-mv ca.rsa.2048.crt delugevpn/config/openvpn/ca.rsa.2048.crt > /dev/null 2>&1
-mv crl.rsa.2048.pem delugevpn/config/openvpn/crl.rsa.2048.pem > /dev/null 2>&1
+cp ca.ovpn delugevpn/config/openvpn/ca.ovpn > /dev/null 2>&1
+cp ca.rsa.2048.crt delugevpn/config/openvpn/ca.rsa.2048.crt > /dev/null 2>&1
+cp crl.rsa.2048.pem delugevpn/config/openvpn/crl.rsa.2048.pem > /dev/null 2>&1
 
 ###################
 # TROUBLESHOOTING #
@@ -115,6 +115,48 @@ mv crl.rsa.2048.pem delugevpn/config/openvpn/crl.rsa.2048.pem > /dev/null 2>&1
 # Create the .env file
 echo "Creating the .env file with the values we have gathered"
 printf "\n"
+
+# Load arm versions if arm arch
+case $(uname -m | cut -c 1-3) in
+	arm)
+	    deluge_image="ledokun/armhf-arch-delugevpn"
+	    jackett_image="lsioarmhf/jackett"
+       cp_image="lsioarmhf/couchpotato"
+       sonarr_image="lsioarmhf/sonarr"
+       radarr_image="lsioarmhf/radarr"
+       sickrage_image="lsioarmhf/sickrage"
+       watchtower_image="v2tec/watchtower:armhf-latest"
+       duplicati_image="lsioarmhf/duplicati"
+       httpd_image="nginx"
+       minio_image="minio/minio:edge-armhf"
+       ombi_image="lsioarmhf/ombi"
+       plexpy_image="lsioarmhf/plexpy"
+       netdata_image="kspillane/armhf-netdata"
+       plex_image="lsioarmhf/plex"
+       pmstag="latest" # no tags for ARM plex
+       ;;
+ x86)
+      deluge_image="binhex/arch-delugevpn"
+       jackett_image="linuxserver/jackett"
+       cp_image="linuxserver/couchpotato"
+       sonarr_image="linuxserver/sonarr"
+       radarr_image="linuxserver/radarr"
+       sickrage_image="linuxserver/sickrage"
+       watchtower_image="v2tec/watchtower"
+       duplicati_image="linuxserver/duplicati"
+       httpd_image="nginx"
+       minio_image="minio/minio"
+       ombi_image="linuxserver/ombi"
+       plexpy_image="linuxserver/plexpy"
+       netdata_image="titpetric/netdata"
+       plex_image="plexinc/pms-docker"
+       ;;
+   *)
+      echo "your architecture $(uname -m) is not curently supported."
+      exit
+      ;;
+esac
+
 echo "LOCALUSER=$localuname" >> .env
 echo "HOSTNAME=$thishost" >> .env
 echo "IP_ADDRESS=$locip" >> .env
@@ -129,6 +171,21 @@ echo "PMSTAG=$pmstag" >> .env
 echo "PMSTOKEN=$pmstoken" >> .env
 echo "PORTAINERSTYLE=$portainerstyle" >> .env
 echo ".env file creation complete"
+echo "deluge_image=$deluge_image" >> .env
+echo "jackett_image=$jackett_image" >> .env
+echo "cp_image=$cp_image" >> .env
+echo "sonarr_image=$sonarr_image" >> .env
+echo "radarr_image=$radarr_image" >> .env
+echo "sickrage_image=$sickrage_image" >> .env
+echo "watchtower_image=$watchtower_image" >> .env
+echo "duplicati_image=$duplicati_image" >> .env
+echo "httpd_image=$httpd_image" >> .env
+echo "minio_image=$minio_image" >> .env
+echo "ombi_image=$ombi_image" >> .env
+echo "plexpy_image=$plexpy_image" >> .env
+echo "netdata_image=$netdata_image" >> .env
+echo "plex_image=$plex_image" >> .env
+
 printf "\n\n"
 
 # Download & Launch the containers
@@ -146,7 +203,7 @@ read -p "What would you like to use as the daemon access password?: " daemonpass
 printf "\n\n"
 
 # Finish up the config
-printf "Configuring Deluge daemon access - UHTTPD index file - Permissions \n\n"
+printf "Configuring Deluge daemon access - nginx index file - Permissions \n\n"
 
 # Configure DelugeVPN: Set Daemon access on, delete the core.conf~ file
 while [ ! -f delugevpn/config/core.conf ]; do sleep 1; done
@@ -162,13 +219,13 @@ echo "CPDAEMONUN=$daemonun" >> .env
 echo "CPDAEMONPASS=$daemonpass" >> .env
 
 # Configure UHTTPD settings and Index file
-docker stop uhttpd > /dev/null 2>&1
-mv index.html www/index.html
+docker stop nginx > /dev/null 2>&1
+cp index.html www/index.html
 perl -i -pe "s/locip/$locip/g" www/index.html
 perl -i -pe "s/daemonun/$daemonun/g" www/index.html
 perl -i -pe "s/daemonpass/$daemonpass/g" www/index.html
 cp .env www/env.txt
-docker start uhttpd > /dev/null 2>&1
+docker start nginx > /dev/null 2>&1
 
 # Fix the Healthcheck in Minio
 docker exec minio sed -i "s/404/403/g" /usr/bin/healthcheck.sh

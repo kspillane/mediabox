@@ -23,7 +23,7 @@ services:
     # COUCHPOTATO
     # ----------------------------------------
     couchpotato:
-        image: linuxserver/couchpotato
+        image: ${cp_image}
         container_name: couchpotato
         restart: unless-stopped
         network_mode: "bridge"
@@ -42,7 +42,7 @@ services:
     # DELUGEVPN
     # ----------------------------------------
     arch-delugevpn:
-        image: binhex/arch-delugevpn
+        image: ${deluge_image}
         container_name: delugevpn
         restart: unless-stopped
         network_mode: "bridge"
@@ -78,7 +78,7 @@ services:
     # DUPLICATI
     # ----------------------------------------
     duplicati:
-        image: linuxserver/duplicati
+        image: ${duplicati_image}
         container_name: duplicati
         restart: unless-stopped
         network_mode: "bridge"
@@ -97,8 +97,8 @@ services:
     # HTTP
     # ----------------------------------------
     uhttpd:
-        image: fnichol/uhttpd
-        container_name: uhttpd
+        image: ${httpd_image}
+        container_name: nginx
         restart: unless-stopped
         network_mode: "bridge"
         ports:
@@ -107,13 +107,13 @@ services:
             - PUID=${PUID}
             - PGID=${PGID}
         volumes:
-            - './www:/www'
+            - './www:/usr/share/nginx/html'
 
     # ----------------------------------------
     # JACKETT
     # ----------------------------------------
     jackett:
-        image: linuxserver/jackett
+        image: ${jackett_image}
         container_name: jackett
         restart: unless-stopped
         network_mode: "bridge"
@@ -131,7 +131,7 @@ services:
     # MINIO
     # ----------------------------------------
     minio:
-        image: minio/minio
+        image: ${minio_image}
         container_name: minio
         restart: unless-stopped
         network_mode: "bridge"
@@ -149,7 +149,7 @@ services:
     # NETDATA
     # ----------------------------------------
     netdata:
-        image: titpetric/netdata
+        image: ${netdata_image}
         container_name: netdata
         restart: unless-stopped
         network_mode: "bridge"
@@ -166,7 +166,7 @@ services:
     # OMBI
     # ----------------------------------------
     ombi:
-        image: linuxserver/ombi
+        image: ${ombi_image}
         container_name: ombi
         restart: unless-stopped
         network_mode: "bridge"
@@ -184,7 +184,7 @@ services:
     # ----------------------------------------
     plex:
         container_name: plex
-        image: plexinc/pms-docker:${PMSTAG}
+        image: ${plex_image}:${PMSTAG}
         restart: unless-stopped
         network_mode: "host"
         ports:
@@ -215,7 +215,7 @@ services:
     # PLEXPY
     # ----------------------------------------
     plexpy:
-        image: linuxserver/plexpy
+        image: ${plexpy_image}
         container_name: plexpy
         restart: unless-stopped
         network_mode: "bridge"
@@ -254,7 +254,7 @@ services:
     # RADARR
     # ----------------------------------------
     radarr:
-        image: linuxserver/radarr
+        image: ${radarr_image}
         container_name: radarr
         restart: unless-stopped
         network_mode: "bridge"
@@ -273,7 +273,7 @@ services:
     # SICKRAGE
     # ----------------------------------------
     sickrage:
-        image: linuxserver/sickrage
+        image: ${sickrage_image}
         container_name: sickrage
         restart: unless-stopped
         network_mode: "bridge"
@@ -292,7 +292,7 @@ services:
     # SONARR
     # ----------------------------------------
     sonarr:
-        image: linuxserver/sonarr
+        image: ${sonarr_image}
         container_name: sonarr
         restart: unless-stopped
         network_mode: "bridge"
@@ -311,7 +311,7 @@ services:
     # WATCHTOWER
     # ----------------------------------------
     watchtower:
-        image: v2tec/watchtower
+        image: ${watchtower_image}
         container_name: watchtower
         restart: unless-stopped
         environment:
